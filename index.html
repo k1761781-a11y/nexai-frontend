@@ -502,81 +502,127 @@
 
         async function startScan(){
 
-            const email =
-            document.getElementById(
-                'userEmail'
-            ).value;
+    const email =
+    document.getElementById(
+        'userEmail'
+    ).value
+    .trim()
+    .toLowerCase();
 
-            if(!email){
+    if(!email){
 
-                alert(
-                    "Email missing"
-                );
+        alert(
+            "Email missing"
+        );
 
-                return;
-            }
+        return;
+    }
 
-            const video =
-            document.getElementById(
-                'camera'
+    const video =
+    document.getElementById(
+        'camera'
+    );
+
+    try{
+
+        // CAMERA ACCESS
+
+        const stream =
+        await navigator
+        .mediaDevices
+        .getUserMedia({
+
+            video:true,
+            audio:false
+        });
+
+        video.srcObject =
+        stream;
+
+        video.style.display =
+        "block";
+
+        document.getElementById(
+            'statusText'
+        ).innerText =
+
+        "Scanning Face...";
+
+        // WAIT CAMERA
+
+        setTimeout(async ()=>{
+
+            // CAPTURE IMAGE
+
+            const canvas =
+            document.createElement(
+                "canvas"
             );
 
-            try{
+            canvas.width =
+            video.videoWidth;
 
-                const stream =
-                await navigator
-                .mediaDevices
-                .getUserMedia({
+            canvas.height =
+            video.videoHeight;
 
-                    video:true
-                });
+            const ctx =
+            canvas.getContext("2d");
 
-                video.srcObject =
-                stream;
+            ctx.drawImage(
+                video,
+                0,
+                0
+            );
 
-                video.style.display =
-                "block";
+            // FACE DATA
+
+            const faceData =
+            canvas.toDataURL(
+                "image/png"
+            );
+
+            // CHECK EXISTING FACE
+
+            const savedFace =
+            localStorage.getItem(
+                "face_" + email
+            );
+
+            // NEW USER
+
+            if(!savedFace){
+
+                localStorage.setItem(
+                    "face_" + email,
+                    faceData
+                );
 
                 document.getElementById(
                     'statusText'
                 ).innerText =
 
-                "AI scanning face...";
+                "New identity secured";
 
-                await new Promise(
-                    resolve =>
-                    setTimeout(resolve, 2500)
+                alert(
+                    "Signup Successful"
                 );
+            }
 
-                const detection =
-                await faceapi.detectSingleFace(
+            // OLD USER
 
-                    video,
+            else{
 
-                    new faceapi
-                    .TinyFaceDetectorOptions()
-
-                );
-
-                if(detection){
+                if(savedFace === faceData){
 
                     document.getElementById(
                         'statusText'
                     ).innerText =
 
-                    "Face detected successfully";
+                    "Face verified successfully";
 
-                    stream.getTracks().forEach(
-                        track => track.stop()
+                    alert(
+                        "Login Successful"
                     );
-
-                    setTimeout(()=>{
-
-                        window.location.href =
-                        "home.html";
-
-                    },1500);
-
                 }
 
                 else{
@@ -585,27 +631,42 @@
                         'statusText'
                     ).innerText =
 
-                    "No face detected";
+                    "Face mismatch detected";
 
                     alert(
-                        "AI could not detect your face"
+                        "Access Denied"
                     );
                 }
-
             }
 
-            catch(error){
+            // STOP CAMERA
 
-                console.error(
-                    "Camera Error:",
-                    error
-                );
+            stream.getTracks().forEach(
+                track => track.stop()
+            );
 
-                alert(
-                    "Camera access denied"
-                );
-            }
-        }
+        }, 3000);
+
+    }
+
+    catch(error){
+
+        console.error(
+            "Camera Error:",
+            error
+        );
+
+        document.getElementById(
+            'statusText'
+        ).innerText =
+
+        "Camera permission denied";
+
+        alert(
+            "Please allow camera access"
+        );
+    }
+}
 
         // =====================================
         // MANUAL TOGGLE
