@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>NexAI | Security Portal</title>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            background:#050505;
+            height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            overflow:hidden;
+            font-family:Arial, sans-serif;
+            color:white;
+            position:relative;
+        }
+
+        .glow-bg{
+            position:absolute;
+            width:700px;
+            height:700px;
+
+            background:
+            radial-gradient(
+                circle,
+                rgba(0,212,255,0.18) 0%,
+                rgba(0,85,255,0) 70%
+            );
+
+            border-radius:50%;
+
+            filter:blur(80px);
+
+            animation:
+            moveGlow 10s infinite alternate;
+
+            z-index:-1;
+        }
+
+        @keyframes moveGlow{
+
+            from{
+                transform:
+                translate(-20%, -20%);
+            }
+
+            to{
+                transform:
+                translate(20%, 20%);
+            }
+        }
+
+        /* MAIN CONTAINER */
+
+        .auth-container{
+
+            width:380px;
+
+            padding:50px;
+
+            border-radius:35px;
+
+            background:
+            rgba(255,255,255,0.04);
+
+            border:
+            1px solid rgba(255,255,255,0.08);
+
+            backdrop-filter:blur(20px);
+
+            text-align:center;
+
+            box-shadow:
+            0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .logo-text{
+
+            font-size:3.5rem;
+
+            font-weight:900;
+
+            background:
+            linear-gradient(
+                to right,
+                #00d4ff,
+                #0055ff
+            );
+
+            -webkit-background-clip:text;
+
+            -webkit-text-fill-color:transparent;
+
+            margin-bottom:10px;
+        }
+
+        .sub-text{
+
+            color:#777;
+
+            font-size:0.95rem;
+
+            margin-bottom:30px;
+        }
+
+        input{
+
+            width:100%;
+
+            padding:16px;
+
+            border:none;
+
+            outline:none;
+
+            border-radius:14px;
+
+            background:
+            rgba(255,255,255,0.06);
+
+            border:
+            1px solid rgba(255,255,255,0.08);
+
+            color:white;
+
+            font-size:1rem;
+        }
+
+        input::placeholder{
+            color:#666;
+        }
+
+        .btn-main{
+
+            width:100%;
+
+            padding:15px;
+
+            margin-top:20px;
+
+            border:none;
+
+            border-radius:14px;
+
+            background:#00d4ff;
+
+            color:black;
+
+            font-weight:bold;
+
+            font-size:1rem;
+
+            cursor:pointer;
+
+            transition:0.4s;
+        }
+
+        .btn-main:hover{
+
+            transform:translateY(-2px);
+
+            box-shadow:
+            0 0 25px rgba(0,212,255,0.5);
+        }
+
+        /* BIOMETRIC AREA */
+
+        #bioArea{
+
+            margin-top:30px;
+
+            display:none;
+        }
+
+        #bioArea p{
+
+            color:#00d4ff;
+
+            font-size:0.85rem;
+
+            letter-spacing:1px;
+
+            margin-bottom:15px;
+        }
+
+        .scan-icon{
+
+            font-size:4rem;
+
+            cursor:pointer;
+
+            transition:0.3s;
+        }
+
+        .scan-icon:hover{
+
+            filter:
+            drop-shadow(0 0 15px #00d4ff);
+
+            transform:scale(1.05);
+        }
+
+        .biometric-link{
+
+            display:block;
+
+            margin-top:22px;
+
+            color:#00d4ff;
+
+            text-decoration:none;
+
+            font-size:0.85rem;
+
+            opacity:0.7;
+
+            cursor:pointer;
+        }
+
+        .status-text{
+
+            margin-top:15px;
+
+            font-size:0.8rem;
+
+            color:#00d4ff;
+
+            opacity:0.8;
+        }
+
+        video{
+
+            width:100%;
+
+            margin-top:20px;
+
+            border-radius:20px;
+
+            display:none;
+
+            border:
+            1px solid rgba(255,255,255,0.1);
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="glow-bg"></div>
+
+    <div class="auth-container">
+
+        <!-- LOGO -->
+
+        <div class="logo-text">
+            NexAI
+        </div>
+
+        <p class="sub-text">
+            No Passwords. Just Intelligence.
+        </p>
+
+        <!-- EMAIL -->
+
+        <input
+            type="email"
+            id="userEmail"
+            placeholder="Enter your Gmail ID..."
+        >
+
+        <!-- LOGIN BUTTON -->
+
+        <button
+            class="btn-main"
+            onclick="handleAuth()">
+
+            Continue with Identity
+
+        </button>
+
+        <!-- BIOMETRIC AREA -->
+
+        <div id="bioArea">
+
+            <p>
+                Scan Face / Fingerprint to Continue
+            </p>
+
+            <div
+                class="scan-icon"
+                onclick="startScan()">
+
+                👤
+
+            </div>
+
+            <!-- CAMERA -->
+
+            <video
+                id="camera"
+                autoplay
+                playsinline>
+            </video>
+
+            <!-- STATUS -->
+
+            <div
+                class="status-text"
+                id="statusText">
+
+                NexAI biometric ready
+
+            </div>
+
+        </div>
+
+        <!-- MANUAL TOGGLE -->
+
+        <span
+            class="biometric-link"
+            id="setupLink"
+            onclick="toggleBio()">
+
+            Setup Biometric Lock
+
+        </span>
+
+    </div>
+
+    <script>
+
+        // =====================================
+        // BACKEND URL
+        // =====================================
+
+        const BACKEND_URL =
+        "https://nexai-voice-backend.onrender.com";
+
+        // =====================================
+        // IDENTITY VERIFICATION
+        // =====================================
+
+        async function handleAuth(){
+
+            const emailInput =
+            document.getElementById(
+                'userEmail'
+            );
+
+            const email =
+            emailInput.value
+            .trim()
+            .toLowerCase();
+
+            // EMAIL VALIDATION
+
+            if(!email){
+
+                alert(
+                    "Please enter your Gmail ID"
+                );
+
+                return;
+            }
+
+            if(!email.includes("@gmail.com")){
+
+                alert(
+                    "Please enter a valid Gmail address"
+                );
+
+                return;
+            }
+
+            try{
+
+                document.getElementById(
+                    'statusText'
+                ).innerText =
+
+                "Connecting to NexAI server...";
+
+                // BACKEND REQUEST
+
+                const response =
+                await fetch(
+
+                    `${BACKEND_URL}/register`,
+
+                    {
+                        method:'POST',
+
+                        headers:{
+                            'Content-Type':'application/json'
+                        },
+
+                        body: JSON.stringify({
+
+                            email: email,
+
+                            biometric_key:
+                            "nexai_local_user"
+                        })
+                    }
+                );
+
+                // CHECK RESPONSE
+
+                if(!response.ok){
+
+                    throw new Error(
+                        "Backend response failed"
+                    );
+                }
+
+                const data =
+                await response.json();
+
+                console.log(
+                    "NexAI Server:",
+                    data
+                );
+
+                // SAVE USER
+
+                localStorage.setItem(
+                    "userEmail",
+                    email
+                );
+
+                // SHOW BIO AREA
+
+                document.getElementById(
+                    'bioArea'
+                ).style.display =
+                'block';
+
+                document.getElementById(
+                    'setupLink'
+                ).style.display =
+                'none';
+
+                document.getElementById(
+                    'statusText'
+                ).innerText =
+
+                data.message ||
+                "Identity verified successfully";
+
+            }
+
+            catch(error){
+
+                console.error(
+                    "Backend Error:",
+                    error
+                );
+
+                document.getElementById(
+                    'statusText'
+                ).innerText =
+
+                "Neural connection failed.";
+
+                alert(
+                    "Backend connection failed"
+                );
+            }
+        }
+
+        // =====================================
+        // REAL CAMERA SCAN
+        // =====================================
+
+        async function startScan(){
+
+            const email =
+            document.getElementById(
+                'userEmail'
+            ).value;
+
+            if(!email){
+
+                alert(
+                    "Email missing"
+                );
+
+                return;
+            }
+
+            const video =
+            document.getElementById(
+                'camera'
+            );
+
+            try{
+
+                // CAMERA ACCESS
+
+                const stream =
+                await navigator
+                .mediaDevices
+                .getUserMedia({
+
+                    video:true
+                });
+
+                video.srcObject =
+                stream;
+
+                video.style.display =
+                "block";
+
+                document.getElementById(
+                    'statusText'
+                ).innerText =
+
+                "Scanning Face...";
+
+                // =================================
+                // FUTURE:
+                // SEND FRAME TO BACKEND
+                // =================================
+
+                // CURRENT:
+                // CAMERA STREAM ONLY
+
+            }
+
+            catch(error){
+
+                console.error(
+                    "Camera Error:",
+                    error
+                );
+
+                alert(
+                    "Camera access denied"
+                );
+            }
+        }
+
+        // =====================================
+        // MANUAL TOGGLE
+        // =====================================
+
+        function toggleBio(){
+
+            const email =
+            document.getElementById(
+                'userEmail'
+            ).value;
+
+            if(!email){
+
+                alert(
+                    "Enter your email first"
+                );
+            }
+
+            else{
+
+                document.getElementById(
+                    'bioArea'
+                ).style.display =
+                'block';
+
+                document.getElementById(
+                    'statusText'
+                ).innerText =
+
+                "Biometric setup enabled";
+            }
+        }
+
+    </script>
+
+</body>
+</html>

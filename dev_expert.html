@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexAI | Development Expert Hub</title>
+    <style>
+        :root {
+            --dev-green: #10b981;
+            --deep-dark: #020617;
+            --glass-panel: rgba(15, 23, 42, 0.9);
+        }
+
+        body {
+            background-color: var(--deep-dark);
+            color: #f8fafc;
+            font-family: 'Consolas', monospace;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR SQUAD */
+        .squad-sidebar {
+            width: 300px;
+            background: var(--glass-panel);
+            border-right: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .squad-member {
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.02);
+            transition: 0.3s;
+        }
+
+        .squad-member.active {
+            border-color: var(--dev-green);
+            background: rgba(16, 185, 129, 0.1);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .member-role { font-size: 10px; color: var(--dev-green); text-transform: uppercase; }
+        .member-name { font-size: 14px; font-weight: bold; margin-top: 5px; }
+
+        /* MAIN WORKSPACE */
+        .workspace {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+        }
+
+        .terminal-output {
+            flex-grow: 1;
+            background: #000;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            overflow-y: auto;
+            color: #4ade80;
+            font-size: 13px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .command-input-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        input {
+            flex-grow: 1;
+            background: #1e293b;
+            border: 1px solid #475569;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        button {
+            background: var(--dev-green);
+            color: black;
+            border: none;
+            padding: 0 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* STATUS DOTS */
+        .status-dot {
+            height: 8px; width: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .status-dot.online { background: #10b981; box-shadow: 0 0 8px #10b981; }
+
+    </style>
+</head>
+<body>
+
+    <div class="squad-sidebar">
+        <h3 style="color: var(--dev-green); margin-bottom: 20px;">DEVELOPMENT SQUAD</h3>
+        
+        <div class="squad-member active" id="node-architect">
+            <div class="member-role"><span class="status-dot online"></span>Lead Architect</div>
+            <div class="member-name">Nex-Architect</div>
+        </div>
+
+        <div class="squad-member" id="node-logic">
+            <div class="member-role"><span class="status-dot"></span>Logic Builder</div>
+            <div class="member-name">Nex-Logic.py</div>
+        </div>
+
+        <div class="squad-member" id="node-ui">
+            <div class="member-role"><span class="status-dot"></span>UI Master</div>
+            <div class="member-name">Nex-Visuals</div>
+        </div>
+
+        <div class="squad-member" id="node-reviewer">
+            <div class="member-role"><span class="status-dot"></span>Code Auditor</div>
+            <div class="member-name">Senior Reviewer AI</div>
+        </div>
+    </div>
+
+    <div class="workspace">
+        <div class="terminal-output" id="output">
+            <p>> [SYSTEM] Development Hub Ready.</p>
+            <p>> [INFO] 4 AI Twins online and awaiting tasks.</p>
+        </div>
+
+        <div class="command-input-container">
+            <input type="text" id="user-input" placeholder="Bhai, kya build karna hai? (e.g. Skillnex dashboard setup)">
+            <button onclick="startAssembly()">EXECUTE</button>
+        </div>
+    </div>
+
+    <script>
+        const output = document.getElementById('output');
+        
+        function addOutput(sender, msg, color = "#4ade80") {
+            const p = document.createElement('p');
+            p.style.color = color;
+            p.innerHTML = `> [${sender}] ${msg}`;
+            output.appendChild(p);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        async function startAssembly() {
+            const task = document.getElementById('user-input').value;
+            if(!task) return;
+
+            // 1. Architect Mode
+            addOutput("ARCHITECT", `Analyzing project requirements for: ${task}...`);
+            document.getElementById('node-architect').classList.add('active');
+            
+            // Artificial delay for realism
+            setTimeout(() => {
+                addOutput("ARCHITECT", "Blueprint ready. Sending to Logic Builder.", "#38bdf8");
+                document.getElementById('node-logic').querySelector('.status-dot').classList.add('online');
+                
+                // 2. Logic Mode
+                setTimeout(() => {
+                    addOutput("LOGIC", "Generating Python backend and Database schema...", "#fbbf24");
+                    
+                    // 3. UI Mode
+                    setTimeout(() => {
+                        addOutput("UI MASTER", "Designing Responsive HTML/CSS components...", "#c084fc");
+                        
+                        // 4. Final Review
+                        setTimeout(() => {
+                            addOutput("REVIEWER", "Auditing code for vulnerabilities and performance...", "#10b981");
+                            setTimeout(() => {
+                                addOutput("SYSTEM", "PROJECT FULLY COMPLETED & SAVED TO /TOOLS", "#10b981");
+                                alert("Bhai, Assembly Line ne kaam pura kar diya!");
+                            }, 2000);
+                        }, 2000);
+                    }, 2000);
+                }, 2000);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

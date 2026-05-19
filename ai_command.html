@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexAI | Global Command Center</title>
+    <style>
+        :root {
+            --neon-blue: #00f2ff;
+            --glass: rgba(15, 23, 42, 0.85);
+            --text-gray: #94a3b8;
+        }
+        body {
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            color: #e2e8f0;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        /* CENTER CORE */
+        .core-ai {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1;
+        }
+        .pulse-ring {
+            width: 220px; height: 220px;
+            border: 2px solid var(--neon-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(0,242,255,0.4);
+            animation: pulse 3s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%,100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 60px var(--neon-blue); }
+        }
+
+        /* PANELS */
+        .side-panel {
+            position: fixed;
+            top: 30px; bottom: 30px;
+            width: 320px;
+            background: var(--glass);
+            border: 1px solid rgba(0,242,255,0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+        .left { left: 30px; }
+        .right { right: 30px; }
+
+        h3 {
+            color: var(--neon-blue);
+            font-size: 18px;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(0,242,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        .activity-log {
+            font-family: 'Consolas', monospace;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            color: #4ade80;
+            line-height: 1.8;
+            overflow-y: auto;
+        }
+
+        /* AI GRID */
+        .ai-squad-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .ai-core-mini {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .ai-core-mini.active-node {
+            border-color: var(--neon-blue);
+            background: rgba(0,242,255,0.1);
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        .core-dot {
+            width: 8px; height: 8px;
+            background: var(--neon-blue);
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+        .ai-name { font-size: 10px; font-weight: 600; color: var(--text-gray); text-transform: uppercase; }
+
+        #status-bar {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            color: #00f2ff;
+            font-size: 13px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body onclick="initNexAI()">
+
+    <div class="core-ai">
+        <div class="pulse-ring" id="main-core"></div>
+        <h2 style="margin-top:20px; letter-spacing:5px;">NEXAI CORE</h2>
+        <p style="color:var(--neon-blue); font-size:12px;">SUPREME MANAGER ACTIVE</p>
+    </div>
+
+    <div class="side-panel left">
+        <h3>Intelligence Hub</h3>
+        <div class="activity-log" id="activity-log">
+            <p>> [SYSTEM] Waiting for activation...</p>
+        </div>
+    </div>
+
+    <div class="side-panel right">
+        <h3>Active AI Squad</h3>
+        <div class="ai-squad-grid">
+            <div class="ai-core-mini" id="cyber-node"><div class="core-dot"></div><div class="ai-name">Cyber Security</div></div>
+            <div class="ai-core-mini" id="dev-node"><div class="core-dot"></div><div class="ai-name">Dev Expert</div></div>
+            <div class="ai-core-mini" id="finance-node"><div class="core-dot"></div><div class="ai-name">Market Trends</div></div>
+            <div class="ai-core-mini" id="blockchain-node"><div class="core-dot"></div><div class="ai-name">Blockchain</div></div>
+        </div>
+    </div>
+
+    <div id="status-bar">CLICK TO BOOT SYSTEM</div>
+
+    <script>
+        const statusDisplay = document.getElementById('status-bar');
+        const logContainer = document.getElementById('activity-log');
+        let isStarted = false;
+
+        function addLog(msg) {
+            const p = document.createElement("p");
+            p.innerText = `> ${msg}`;
+            logContainer.prepend(p);
+        }
+
+        // --- FIXED BACKEND CONNECTION ---
+        async function sendToBackend(text) {
+            try {
+                // Yahan localhost hata kar sahi live link daal diya hai
+                const response = await fetch(`https://nexai-voice-backend.onrender.com/chat?prompt=${encodeURIComponent(text)}`);
+                const data = await response.json();
+                
+                if(data.status === "Success") {
+                    addLog(`[NEXAI] ${data.reply}`);
+                    statusDisplay.innerText = data.reply;
+                    
+                    // Voice Play (Male Voice from Backend)
+                    const audio = new Audio(data.audio_url + "?t=" + new Date().getTime());
+                    audio.play();
+
+                    // Visual Trigger
+                    if(text.toLowerCase().includes("cyber")) document.getElementById('cyber-node').classList.add('active-node');
+                    if(text.toLowerCase().includes("finance") || text.toLowerCase().includes("market")) document.getElementById('finance-node').classList.add('active-node');
+                }
+            } catch (e) {
+                addLog("[ERROR] Backend Link Failed");
+                statusDisplay.innerText = "SYSTEM OFFLINE";
+            }
+        }
+
+        // --- VOICE RECOGNITION ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.continuous = true;
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[event.results.length - 1][0].transcript.trim();
+            addLog(`[USER] ${transcript}`);
+            sendToBackend(transcript);
+        };
+
+        recognition.onend = () => { if(isStarted) recognition.start(); };
+
+        // --- INITIALIZATION ---
+        function initNexAI() {
+            if(!isStarted) {
+                isStarted = true;
+                statusDisplay.innerText = "SYSTEM ONLINE - LISTENING...";
+                addLog("[SYSTEM] Neural Link Established");
+                recognition.start();
+                
+                // Boot greeting
+                sendToBackend("system_online_greet");
+            }
+        }
+    </script>
+</body>
+</html>

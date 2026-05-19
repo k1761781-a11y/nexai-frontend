@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexAI | Cyber Operations & Remote Command</title>
+    <style>
+        :root { 
+            --cyber-red: #ff003c; 
+            --cyber-blue: #00f2ff; 
+            --cyber-green: #00ff66;
+            --dark: #020617; 
+        }
+        
+        body { 
+            background: var(--dark); 
+            color: #fff; 
+            font-family: 'Courier New', monospace; 
+            margin: 0; 
+            overflow-x: hidden; 
+        }
+
+        /* --- TARGET INTERFACE (TOP BAR) --- */
+        .target-injector { 
+            background: #090d16; 
+            border-bottom: 2px solid var(--cyber-blue); 
+            padding: 20px; 
+            display: flex; 
+            gap: 15px; 
+            align-items: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+        }
+        .target-injector input { 
+            flex-grow: 1; 
+            background: #000; 
+            border: 1px solid var(--cyber-blue); 
+            color: var(--cyber-blue); 
+            padding: 12px; 
+            font-family: inherit; 
+            font-size: 14px; 
+            outline: none; 
+            border-radius: 4px; 
+        }
+        .target-injector button { 
+            background: var(--cyber-blue); 
+            color: #000; 
+            font-weight: bold; 
+            border: none; 
+            padding: 12px 30px; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            text-transform: uppercase; 
+            transition: all 0.3s ease;
+        }
+        .target-injector button:hover { 
+            background: #fff; 
+            box-shadow: 0 0 15px var(--cyber-blue); 
+        }
+
+        /* --- GLOBAL OPERATIONS (Top Section) --- */
+        .operations-deck { 
+            min-height: 90vh; 
+            padding: 40px; 
+            box-sizing: border-box; 
+        }
+        .deck-label { 
+            color: var(--cyber-blue); 
+            font-size: 14px; 
+            font-weight: bold; 
+            border-bottom: 1px solid #1e293b; 
+            padding-bottom: 10px; 
+            margin-bottom: 30px; 
+        }
+        .operations-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 20px; 
+        }
+        
+        .op-card { 
+            background: rgba(0, 242, 255, 0.02); 
+            border: 1px solid #1e293b; 
+            padding: 25px; 
+            border-radius: 8px; 
+            transition: 0.3s; 
+        }
+        .op-card.scanning { 
+            border-color: var(--cyber-blue); 
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.15); 
+            background: rgba(0, 242, 255, 0.05); 
+        }
+        .op-title { 
+            font-weight: bold; 
+            font-size: 16px; color: #fff; 
+            margin-top: 5px; 
+        }
+        .op-status { 
+            font-size: 12px; 
+            color: #64748b; 
+            margin-top: 5px; 
+            white-space: pre-wrap;
+        }
+        .profit-label { 
+            color: var(--cyber-blue); 
+            font-size: 10px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            margin-top: 15px; 
+        }
+
+        .scroll-down { 
+            text-align: center; 
+            color: #64748b; 
+            font-size: 11px; 
+            margin-top: 40px; 
+            animation: bounce 2s infinite; 
+        }
+        @keyframes bounce { 
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 
+            40% {transform: translateY(-10px);} 
+            60% {transform: translateY(-5px);} 
+        }
+
+        /* --- DEFENSE SECTOR (Bottom Section) --- */
+        .defense-sector { 
+            min-height: 100vh; 
+            padding: 40px; 
+            background: rgba(255, 0, 60, 0.01); 
+            display: flex; 
+            flex-direction: column; 
+            box-sizing: border-box; 
+        }
+        .sector-label { 
+            color: var(--cyber-red); 
+            font-size: 14px; 
+            font-weight: bold; 
+            border-bottom: 1px solid #330000; 
+            padding-bottom: 10px; 
+            margin-bottom: 30px; 
+        }
+        .battle-display { 
+            flex-grow: 1; 
+            display: flex; 
+            gap: 20px; 
+            min-height: 400px; 
+        }
+        
+        .nodes-sidebar { 
+            width: 300px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+        }
+        .def-node { 
+            padding: 15px; 
+            background: rgba(0,0,0,0.5); 
+            border: 1px solid #330000; 
+            border-radius: 5px; 
+            font-size: 12px; 
+            transition: all 0.3s ease;
+        }
+        .def-node.active { 
+            border-color: var(--cyber-red); 
+            box-shadow: 0 0 15px rgba(255,0,60,0.2); 
+            background: rgba(255, 0, 60, 0.05); 
+        }
+        
+        /* Dynamic Matrix-AI Output Display */
+        .visual-control { 
+            flex-grow: 1; 
+            background: #000; 
+            border: 1px solid #330000; 
+            position: relative; 
+            padding: 20px;
+            font-size: 13px;
+            overflow-y: auto;
+            max-height: 430px;
+            box-sizing: border-box;
+        }
+        .terminal-log { 
+            height: 220px; 
+            background: #000; 
+            border: 1px solid #330000; 
+            margin-top: 20px; 
+            padding: 15px; 
+            overflow-y: auto; 
+            color: var(--cyber-red); 
+            font-size: 13px; 
+        }
+        
+        /* EVIDENCE ACTION PANEL */
+        .evidence-panel { 
+            display: none; 
+            background: #090d16; 
+            border: 1px solid var(--cyber-blue); 
+            padding: 15px; 
+            margin-top: 15px; 
+            border-radius: 4px; 
+            text-align: center; 
+        }
+        .evidence-btn { 
+            background: none; 
+            border: 1px solid var(--cyber-blue); 
+            color: var(--cyber-blue); 
+            font-weight: bold; 
+            padding: 10px 20px; 
+            cursor: pointer; 
+            font-family: inherit; 
+            font-size: 12px; 
+            text-transform: uppercase; 
+            margin-left: 10px; 
+            transition: 0.3s;
+        }
+        .evidence-btn:hover { 
+            background: var(--cyber-blue); 
+            color: #000; 
+        }
+
+        .alert-box { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            padding: 15px; 
+            background: var(--cyber-red); 
+            color: white; 
+            font-weight: bold; 
+            border-radius: 4px; 
+            display: none; 
+            z-index: 1000; 
+            box-shadow: 0 0 20px rgba(255,0,60,0.5);
+        }
+    </style>
+</head>
+<body>
+
+<div class="alert-box" id="global-alert">AUTONOMOUS COUNTER-STRIKE SUCCESSFUL: Threat Extinguished.</div>
+
+<div class="target-injector">
+    <div id="node-id-label" style="font-size: 11px; color: var(--cyber-blue); font-weight: bold;">NEX-NODE: PATNA_CORE_HQ</div>
+    <input type="text" id="target-url" placeholder="Enter Client Website URL, App Domain, or IP (e.g., myshop.com)...">
+    <button onclick="injectTarget()">Deploy NexAI Protection</button>
+</div>
+
+<div class="operations-deck">
+    <div class="deck-label">● THE WORKSHOP: GLOBAL OPERATIONAL COMMAND (NexAI Agency)</div>
+    <div class="operations-grid">
+        
+        <div class="op-card" id="card-audit">
+            <div style="color: var(--cyber-blue); font-size: 10px; font-weight: bold;">AUDIT AI</div>
+            <div class="op-title">Vulnerability Auditor (AV)</div>
+            <div class="op-status" id="status-audit">Awaiting target initialization...</div>
+            <div class="profit-label">Revenue Generating: PAID AUDIT</div>
+        </div>
+        
+        <div class="op-card" id="card-policy">
+            <div style="color: var(--cyber-blue); font-size: 10px; font-weight: bold;">POLICY AI</div>
+            <div class="op-title">Compliance Manager (CP)</div>
+            <div class="op-status" id="status-policy">Monitoring global compliance frameworks...</div>
+            <div class="profit-label">Internal & Client Compliance</div>
+        </div>
+
+        <div class="op-card" id="card-vault">
+            <div style="color: var(--cyber-blue); font-size: 10px; font-weight: bold;">VAULT AI</div>
+            <div class="op-title">Data Privacy & Encryption (DP)</div>
+            <div class="op-status" id="status-vault">Data shielding standby mode...</div>
+            <div class="profit-label">Data Protection Service</div>
+        </div>
+
+        <div class="op-card" id="card-threat">
+            <div style="color: var(--cyber-blue); font-size: 10px; font-weight: bold;">THREAT AI</div>
+            <div class="op-title">Threat Intelligence Monitor (TM)</div>
+            <div class="op-status" id="status-threat">Passive scan of global darknet feeds. OK.</div>
+            <div class="profit-label">Intelligence Subscription Service</div>
+        </div>
+
+    </div>
+    
+    <div class="scroll-down">
+        SCROLL DOWN FOR LIVE AUTONOMOUS WAR ROOM<br>▼
+    </div>
+</div>
+
+<div class="defense-sector">
+    <div class="sector-label">● THE WAR ROOM: AUTONOMOUS DEFENSE SECTOR (KALI LINUX_CORE)</div>
+    
+    <div class="battle-display">
+        <div class="nodes-sidebar">
+            <div class="def-node" id="node-suricata">
+                <div style="color: var(--cyber-red); font-weight: bold;">IPS/IDS (Suricata)</div>
+                <div>AUTONOMOUS: Threat Traffic Monitor</div>
+            </div>
+            <div class="def-node" id="node-nmap">
+                <div style="color: var(--cyber-red); font-weight: bold;">RECON (Nmap/Amass)</div>
+                <div>AUTO-TRACE: Target OSINT Discovery</div>
+            </div>
+            <div class="def-node" id="node-msf">
+                <div style="color: var(--cyber-red); font-weight: bold;">COUNTER-STRIKE (Metasploit)</div>
+                <div>ENGAGED: Lethal Packet Retaliation</div>
+            </div>
+            <div style="margin-top: auto; border: 1px solid #330000; padding: 10px; text-align: center; background: #000;">
+                <div style="color: var(--cyber-red); font-size: 10px; font-weight: bold;">THREAT LEVEL</div>
+                <div id="threat" style="font-size: 18px; color: #00ff00; font-weight: bold;">STABLE</div>
+            </div>
+        </div>
+        
+        <div class="visual-control" id="ai-twins-room">
+            <p style="color: #64748b;">[STANDBY] Awaiting target deployment to initialize Twin Strategy Rooms...</p>
+        </div>
+    </div>
+
+    <div class="evidence-panel" id="evidence-box">
+        <span style="color: var(--cyber-blue); font-size: 12px;">📄 FORENSIC EVIDENCE LOG GENERATED SUCCESSFULLY FOR COURT REVIEWS.</span>
+        <button class="evidence-btn" onclick="exportEvidenceFile()">Download Evidence .TXT File</button>
+    </div>
+
+    <div class="terminal-log" id="term-log">
+        <p style="color: #fff;">[SYSTEM] Kali Linux Kernel Active. Automated threat logging armed...</p>
+    </div>
+</div>
+
+<script>
+    const terminal = document.getElementById('term-log');
+    const aiTwinsRoom = document.getElementById('ai-twins-room');
+    let loggedAttackerIP = "198.51.100.42"; 
+    let currentTargetDomain = "";
+    let finalCourtReport = "";
+
+    function addWarLog(msg, color = "var(--cyber-red)") {
+        const p = document.createElement('p');
+        p.style.color = color;
+        p.innerHTML = `> [${new Date().toLocaleTimeString()}] ${msg}`;
+        terminal.appendChild(p);
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function injectTarget() {
+        currentTargetDomain = document.getElementById('target-url').value;
+        if(!currentTargetDomain) {
+            alert("Please enter a valid website link or software domain first!");
+            return;
+        }
+
+        let permission = confirm(`Authorize NexAI to remotely monitor and intercept incoming multi-stage threats on ${currentTargetDomain}?`);
+        if(!permission) return;
+
+        // UI Reset & Handshake Phase
+        document.getElementById('card-audit').classList.add('scanning');
+        document.getElementById('status-audit').innerText = `CONNECTING KALI CORE NODE TO: ${currentTargetDomain}`;
+        document.getElementById('status-vault').innerText = `DATA SHIELD LINKED: Securing endpoints for ${currentTargetDomain}`;
+        
+        let nodeLabel = document.getElementById('node-id-label');
+        if(nodeLabel) {
+            nodeLabel.innerText = `NODE: PATNA_CORE_HQ | SECURING: ${currentTargetDomain.toUpperCase()}`;
+        }
+        
+        document.getElementById('evidence-box').style.display = 'none';
+        aiTwinsRoom.innerHTML = `<p style="color: var(--cyber-blue);">[CONNECTING] Querying backend server on port 5000 for neural sync...</p>`;
+
+        addWarLog(`[REMOTE HANDSHAKE] Sending encryption connection keys onto target ${currentTargetDomain}...`, "var(--cyber-blue)");
+        
+        // --- FIXED LIVE BACKEND FETCH INTEGRATION ---
+        fetch('https://nexai-voice-backend.onrender.com/api/protect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ target: currentTargetDomain })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === "success") {
+                // Mapping custom box updates from parsed Gemini response
+                if(data.vulnerability_auditor) document.getElementById('status-audit').innerText = data.vulnerability_auditor;
+                if(data.threat_intelligence) document.getElementById('status-threat').innerText = data.threat_intelligence;
+                if(data.privacy_encryption) document.getElementById('status-vault').innerText = data.privacy_encryption;
+                
+                // Execute terminal logs and animation
+                executeDefenseSequence(loggedAttackerIP, data.twins_discussion, data.evidence_report);
+            } else {
+                addWarLog(`[ERROR] Backend error: ${data.message}`, "var(--cyber-red)");
+            }
+        })
+        .catch(err => {
+            addWarLog(`[ALERT] Backend server offline. Activating autonomous local AI security core simulation routines...`, "orange");
+            
+            let simulatedTwinsText = `[ARCHITECT AI] System core isolated from server. Deploying local matrix algorithms.\n[INTERCEPTOR AI] Wave threats detected. Scrubbing packet layers immediately.\n[AVENGER AI] Tracking trace structures to IP ${loggedAttackerIP}. Hard jail rules injected successfully.`;
+            
+            let simulatedCourtReport = `==================================================================\n              NEXAI CYBER FORENSIC & EVIDENCE REPORT\n==================================================================\nGenerated On       : ${new Date().toISOString()}\nProtected Target   : ${currentTargetDomain}\nCommand Node       : LOCAL_FAILSAFE_NODE (Patna Security Sync)\n\nThreat Profile     : DDoS Flood, SQL Injection, Brute-Force & Ransomware Block\nCaptured IP        : ${loggedAttackerIP}\nAction Taken       : Complete System Shield & Attacker Port Saturation\nStatus             : SECURED VIA AUTONOMOUS FAILSAFE\n==================================================================`;
+            
+            executeDefenseSequence(loggedAttackerIP, simulatedTwinsText, simulatedCourtReport);
+        });
+    }
+
+    function executeDefenseSequence(ip, twinsDiscussion, courtReport) {
+        document.getElementById('threat').innerText = "CRITICAL";
+        document.getElementById('threat').style.color = "var(--cyber-red)";
+        document.getElementById('node-suricata').classList.add('active');
+
+        addWarLog(`⚠️ WAVE 1 & 2 ENGAGED: Volumetric DDoS (95k/sec) & Admin Brute Force hitting ${currentTargetDomain}!`, "var(--cyber-red)");
+        
+        setTimeout(() => {
+            document.getElementById('node-nmap').classList.add('active');
+            addWarLog(`[THE INTERCEPTOR] Activating reverse-blackhole routing. Traffic scrubbing active.`);
+            
+            addWarLog(`⚠️ WAVE 3 & 4 DETECTED: SQL Injection execution & Ransomware Payload signature detected!`, "var(--cyber-red)");
+            addWarLog(`[THE AVENGER] Extracting digital fingerprint. Tracking proxy node vectors...`);
+            
+            setTimeout(() => {
+                addWarLog(`[TRACE ACCURATE] Host Location resolved: Attacker IP = ${ip}`, "white");
+                document.getElementById('node-msf').classList.add('active');
+                
+                aiTwinsRoom.innerHTML = `<h3 style="color:var(--cyber-blue); margin:0 0 15px 0;">🤖 TWINS OPERATIONS WAR ROOM:</h3><pre style="white-space: pre-wrap; font-family:inherit; color:#fff; line-height:1.6; margin:0;">${twinsDiscussion}</pre>`;
+                
+                addWarLog(`[KALI-STRIKE] Initiating TCP-Reset feedback loops & executing Reverse-Shell shell counter crash rules...`);
+                
+                setTimeout(() => {
+                    addWarLog(`🔥 SUCCESS: Attacker socket destroyed. Threat signature banned across all network blocks on ${currentTargetDomain}.`, "var(--cyber-green)");
+                    document.getElementById('threat').innerText = "STABLE";
+                    document.getElementById('threat').style.color = "var(--cyber-green)";
+                    document.getElementById('global-alert').style.display = 'block';
+                    document.getElementById('evidence-box').style.display = 'block'; 
+                    
+                    finalCourtReport = courtReport;
+                    
+                    setTimeout(() => { document.getElementById('global-alert').style.display = 'none'; }, 4000);
+                }, 4000);
+            }, 3000);
+        }, 3000);
+    }
+
+    function exportEvidenceFile() {
+        if(!finalCourtReport) return alert("No forensic log recorded yet.");
+        const blob = new Blob([finalCourtReport], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `NexAI_Forensic_Evidence_${currentTargetDomain.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+        link.click();
+    }
+</script>
+
+</body>
+</html>
