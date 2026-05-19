@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>NexAI | Security Portal</title>
 
+    <!-- FACE AI -->
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+
     <style>
 
         *{
@@ -59,8 +62,6 @@
                 translate(20%, 20%);
             }
         }
-
-        /* MAIN CONTAINER */
 
         .auth-container{
 
@@ -173,8 +174,6 @@
             0 0 25px rgba(0,212,255,0.5);
         }
 
-        /* BIOMETRIC AREA */
-
         #bioArea{
 
             margin-top:30px;
@@ -262,8 +261,6 @@
 
     <div class="auth-container">
 
-        <!-- LOGO -->
-
         <div class="logo-text">
             NexAI
         </div>
@@ -272,15 +269,11 @@
             No Passwords. Just Intelligence.
         </p>
 
-        <!-- EMAIL -->
-
         <input
             type="email"
             id="userEmail"
             placeholder="Enter your Gmail ID..."
         >
-
-        <!-- LOGIN BUTTON -->
 
         <button
             class="btn-main"
@@ -289,8 +282,6 @@
             Continue with Identity
 
         </button>
-
-        <!-- BIOMETRIC AREA -->
 
         <div id="bioArea">
 
@@ -306,15 +297,11 @@
 
             </div>
 
-            <!-- CAMERA -->
-
             <video
                 id="camera"
                 autoplay
                 playsinline>
             </video>
-
-            <!-- STATUS -->
 
             <div
                 class="status-text"
@@ -325,8 +312,6 @@
             </div>
 
         </div>
-
-        <!-- MANUAL TOGGLE -->
 
         <span
             class="biometric-link"
@@ -349,7 +334,48 @@
         "https://nexai-voice-backend.onrender.com";
 
         // =====================================
-        // IDENTITY VERIFICATION
+        // LOAD FACE AI
+        // =====================================
+
+        async function loadFaceAI(){
+
+            try{
+
+                document.getElementById(
+                    'statusText'
+                ).innerText =
+
+                "Loading AI face engine...";
+
+                await faceapi.nets.tinyFaceDetector.loadFromUri(
+                    'https://cdn.jsdelivr.net/npm/face-api.js/weights'
+                );
+
+                console.log(
+                    "Face AI Loaded"
+                );
+
+            }
+
+            catch(error){
+
+                console.error(
+                    "Face AI Error:",
+                    error
+                );
+
+                document.getElementById(
+                    'statusText'
+                ).innerText =
+
+                "AI face engine failed.";
+            }
+        }
+
+        loadFaceAI();
+
+        // =====================================
+        // AUTH
         // =====================================
 
         async function handleAuth(){
@@ -363,8 +389,6 @@
             emailInput.value
             .trim()
             .toLowerCase();
-
-            // EMAIL VALIDATION
 
             if(!email){
 
@@ -392,8 +416,6 @@
 
                 "Connecting to NexAI server...";
 
-                // BACKEND REQUEST
-
                 const response =
                 await fetch(
 
@@ -411,12 +433,10 @@
                             email: email,
 
                             biometric_key:
-                            "nexai_local_user"
+                            "browser_face_pending"
                         })
                     }
                 );
-
-                // CHECK RESPONSE
 
                 if(!response.ok){
 
@@ -433,14 +453,10 @@
                     data
                 );
 
-                // SAVE USER
-
                 localStorage.setItem(
                     "userEmail",
                     email
                 );
-
-                // SHOW BIO AREA
 
                 document.getElementById(
                     'bioArea'
@@ -481,7 +497,7 @@
         }
 
         // =====================================
-        // REAL CAMERA SCAN
+        // AI FACE SCAN
         // =====================================
 
         async function startScan(){
@@ -507,8 +523,6 @@
 
             try{
 
-                // CAMERA ACCESS
-
                 const stream =
                 await navigator
                 .mediaDevices
@@ -527,15 +541,56 @@
                     'statusText'
                 ).innerText =
 
-                "Scanning Face...";
+                "AI scanning face...";
 
-                // =================================
-                // FUTURE:
-                // SEND FRAME TO BACKEND
-                // =================================
+                await new Promise(
+                    resolve =>
+                    setTimeout(resolve, 2500)
+                );
 
-                // CURRENT:
-                // CAMERA STREAM ONLY
+                const detection =
+                await faceapi.detectSingleFace(
+
+                    video,
+
+                    new faceapi
+                    .TinyFaceDetectorOptions()
+
+                );
+
+                if(detection){
+
+                    document.getElementById(
+                        'statusText'
+                    ).innerText =
+
+                    "Face detected successfully";
+
+                    stream.getTracks().forEach(
+                        track => track.stop()
+                    );
+
+                    setTimeout(()=>{
+
+                        window.location.href =
+                        "home.html";
+
+                    },1500);
+
+                }
+
+                else{
+
+                    document.getElementById(
+                        'statusText'
+                    ).innerText =
+
+                    "No face detected";
+
+                    alert(
+                        "AI could not detect your face"
+                    );
+                }
 
             }
 
